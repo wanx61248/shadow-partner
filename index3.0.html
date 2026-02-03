@@ -3,1834 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShadowPartner 10.1 - 模块化深度版</title>
+    <title>时空镜像 | 跨越千年的命运共振</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
-        /* ============================================================
-           模块 0：UI 全局空间指标 (Layout & Tokens)
-           ============================================================ */
-        :root {
-            --nav-height: 110px;
-            --container-max-width: 420px;
-            --accent-blue: #07C160;
-            --accent-blue-hover: #06AD56;
-            --wechat-green: #07C160;
-            --wechat-green-light: #38D97F;
-            --wechat-green-dark: #06AD56;
-            --glass-bg: rgba(25, 25, 27, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --card-hover-bg: rgba(35, 35, 37, 0.9);
-        }
-        
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body { 
-            background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
-            color: #fff; 
-            font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif; 
-            overflow: hidden; 
-        }
-        
-        /* 灵动岛状态提示 */
-        .status-island {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 200;
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            opacity: 0;
-            transform: translate(-50%, -20px);
-            pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        .status-island.active {
-            opacity: 1;
-            transform: translate(-50%, 0);
-            pointer-events: auto;
-        }
-        
-        .status-island-icon {
-            width: 22px;
-            height: 22px;
-            flex-shrink: 0;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        
-        .status-island-text {
-            font-size: 12px;
-            font-weight: 600;
-            color: #e4e4e7;
-        }
-        
-        /* AI提取结果样式 */
-        .ai-extract-result {
-            font-size: 11px;
-            color: #22c55e;
-            font-style: italic;
-            margin-top: 8px;
-            line-height: 1.5;
-            padding-left: 4px;
-        }
-        
-        .ai-extract-result::before {
-            content: "✨ ";
-            margin-right: 4px;
-        }
-        
-        .view-section { 
-            position: absolute; 
-            inset: 0; 
-            padding: 64px 24px var(--nav-height) 24px;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
-            overflow-y: auto; 
-            scroll-behavior: smooth; 
-        }
-        
-        .hidden-view { 
-            opacity: 0; 
-            transform: translateY(20px) scale(0.98); 
-            pointer-events: none; 
-            filter: blur(4px);
-        }
-        
-        .active-view { 
-            opacity: 1; 
-            transform: translateY(0) scale(1); 
-            pointer-events: auto; 
-            filter: blur(0);
-        }
-
-        .glass-card { 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--glass-border); 
-            border-radius: 20px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        
-        .glass-card:hover {
-            background: var(--card-hover-bg);
-            border-color: rgba(255, 255, 255, 0.12);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-        }
-        
-        .task-item {
-            animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-        }
-        
-        .task-item:nth-child(1) { animation-delay: 0.1s; }
-        .task-item:nth-child(2) { animation-delay: 0.2s; }
-        .task-item:nth-child(3) { animation-delay: 0.3s; }
-        
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .nav-mask { 
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
-            height: 160px; 
-            background: linear-gradient(to top, #000 40%, transparent 100%); 
-            pointer-events: none; 
-            z-index: 90; 
-        }
-        
-        .avatar-box { 
-            width: 44px; 
-            height: 44px; 
-            border-radius: 14px; 
-            object-fit: cover; 
-            flex-shrink: 0; 
-            background: linear-gradient(135deg, #1c1c1e 0%, #2a2a2c 100%);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* 按钮优化 */
-        button {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-        
-        button:hover {
-            transform: translateY(-1px);
-        }
-        
-        button:active {
-            transform: translateY(0) scale(0.98);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--wechat-green) 0%, var(--wechat-green-dark) 100%);
-            box-shadow: 0 4px 16px rgba(7, 193, 96, 0.3);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--wechat-green-dark) 0%, #059A4A 100%);
-            box-shadow: 0 6px 20px rgba(7, 193, 96, 0.4);
-        }
-        
-        .btn-secondary {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.03);
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-        
-        .btn-ghost {
-            background: rgba(39, 39, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .btn-ghost:hover {
-            background: rgba(39, 39, 42, 1);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        /* 导航图标优化 */
-        .nav-icon {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 8px;
-            border-radius: 12px;
-        }
-        
-        .nav-icon:hover {
-            opacity: 1 !important;
-            background: rgba(255, 255, 255, 0.05);
-            transform: scale(1.1);
-        }
-        
-        .nav-icon.active {
-            opacity: 1 !important;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        /* 主按钮优化 */
-        #main-action-btn {
-            position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
-        }
-        
-        #main-action-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 32px rgba(255, 255, 255, 0.2);
-        }
-        
-        #main-action-btn:active {
-            transform: scale(0.95);
-        }
-        
-        /* 主按钮图标切换动画 */
-        .main-icon {
-            position: absolute;
-            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .main-icon.hidden {
-            opacity: 0;
-            transform: scale(0.8) rotate(-90deg);
-            pointer-events: none;
-        }
-        
-        .main-icon:not(.hidden) {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-        }
-        
-        /* 知识资产卡片优化 */
-        .asset-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-        
-        .asset-card:hover {
-            transform: translateX(4px);
-            border-left-width: 3px;
-        }
-        
-        .asset-card.expanded {
-            border-left-width: 4px;
-        }
-        
-        .asset-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        
-        .asset-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #e4e4e7;
-            flex: 1;
-        }
-        
-        .asset-badge {
-            font-size: 9px;
-            color: #71717a;
-            background: rgba(39, 39, 42, 0.5);
-            padding: 3px 8px;
-            border-radius: 9999px;
-            margin-left: 8px;
-        }
-        
-        .asset-section {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .asset-section:first-of-type {
-            border-top: none;
-            padding-top: 0;
-            margin-top: 0;
-        }
-        
-        .asset-section-title {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--accent-blue);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .asset-section-content {
-            font-size: 11px;
-            color: #a1a1aa;
-            line-height: 1.6;
-        }
-        
-        .asset-keywords {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 6px;
-        }
-        
-        .asset-keyword {
-            font-size: 10px;
-            color: #d4d4d8;
-            background: rgba(0, 122, 255, 0.1);
-            border: 1px solid rgba(0, 122, 255, 0.2);
-            padding: 4px 10px;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-        }
-        
-        .asset-keyword:hover {
-            background: rgba(0, 122, 255, 0.2);
-            border-color: rgba(0, 122, 255, 0.4);
-        }
-        
-        .asset-expand-btn {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-        
-        .asset-expand-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .asset-expand-btn svg {
-            transition: transform 0.3s ease;
-        }
-        
-        .asset-expand-btn.expanded svg {
-            transform: rotate(180deg);
-        }
-        
-        .asset-details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease;
-            opacity: 0;
-            margin-top: 0;
-        }
-        
-        .asset-details.expanded {
-            max-height: 2000px;
-            opacity: 1;
-            margin-top: 12px;
-        }
-        
-        /* 优化资产卡片间距 */
-        #assets-list {
-            padding-bottom: 20px;
-        }
-        
-        /* 日志时间线优化 */
-        .log-item {
-            transition: all 0.2s ease;
-        }
-        
-        .log-item:hover {
-            transform: translateX(4px);
-        }
-        
-        .log-dot {
-            transition: all 0.3s ease;
-            box-shadow: 0 0 0 0 rgba(7, 193, 96, 0.4);
-        }
-        
-        .log-item:hover .log-dot {
-            box-shadow: 0 0 0 8px rgba(7, 193, 96, 0.1);
-            transform: scale(1.2);
-        }
-        
-        /* 日期选择器优化 */
-        .date-chip {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-        
-        .date-chip:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        
-        .date-chip.active {
-            background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
-            color: #000;
-            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
-        }
-        
-        /* 空状态优化 */
-        #chat-empty {
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* 滚动条优化 */
-        ::-webkit-scrollbar { 
-            width: 4px; 
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        /* 隐藏滚动条但保持滚动功能 */
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        
-        /* 脉冲动画优化 */
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-        }
-        
-        /* 改进任务计数显示 */
-        #task-count {
-            color: var(--accent-blue);
-            font-weight: 900;
-        }
-        
-        /* 上传按钮样式 */
-        .upload-btn {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-        
-        .upload-btn:hover {
-            background: var(--card-hover-bg);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(7, 193, 96, 0.2);
-        }
-        
-        .upload-btn:active {
-            transform: translateY(0) scale(0.98);
-        }
-        
-        .upload-btn svg {
-            transition: transform 0.2s ease;
-        }
-        
-        .upload-btn:hover svg {
-            transform: translateY(-2px);
-        }
-        
-        /* 日历弹窗样式 */
-        #calendar-modal {
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .calendar-day {
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .calendar-day:hover:not(.bg-white) {
-            transform: scale(1.1);
-        }
-        
-        /* 点击日历弹窗外部关闭 */
-        #calendar-modal > div {
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        
-        /* 点击外部关闭日历 */
-        #calendar-modal::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-        }
-        
-        /* 聊天视图灵动岛样式 */
-        #chat-status-island {
-            animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        #ai-status-text, #ai-status-subtext {
-            transition: opacity 0.3s ease;
-        }
-        
-        /* AI数字分身效果 */
-        .ai-avatar-container {
-            position: relative;
-        }
-        
-        .ai-avatar {
-            animation: float 3s ease-in-out infinite, pulse-glow 2s ease-in-out infinite;
-            box-shadow: 0 0 20px rgba(7, 193, 96, 0.4), 0 0 40px rgba(7, 193, 96, 0.2);
-            position: relative;
-        }
-        
-        .ai-scanline {
-            background: linear-gradient(
-                to bottom,
-                transparent 0%,
-                rgba(7, 193, 96, 0.3) 50%,
-                transparent 100%
-            );
-            animation: scan 3s linear infinite;
-            pointer-events: none;
-        }
-        
-        .ai-particles {
-            background-image: 
-                radial-gradient(2px 2px at 20% 30%, rgba(7, 193, 96, 0.6), transparent),
-                radial-gradient(2px 2px at 60% 70%, rgba(56, 217, 127, 0.5), transparent),
-                radial-gradient(1px 1px at 50% 50%, rgba(7, 193, 96, 0.4), transparent);
-            background-size: 100% 100%;
-            animation: particles-float 4s ease-in-out infinite;
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        
-        .ai-glow {
-            box-shadow: 
-                0 0 10px rgba(7, 193, 96, 0.6),
-                0 0 20px rgba(7, 193, 96, 0.4),
-                inset 0 0 10px rgba(7, 193, 96, 0.2);
-            animation: glow-pulse 2s ease-in-out infinite;
-        }
-        
-        .ai-status-dot {
-            box-shadow: 0 0 8px rgba(7, 193, 96, 0.8);
-        }
-        
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-            50% {
-                transform: translateY(-4px) rotate(2deg);
-            }
-        }
-        
-        @keyframes pulse-glow {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(7, 193, 96, 0.4), 0 0 40px rgba(7, 193, 96, 0.2);
-            }
-            50% {
-                box-shadow: 0 0 30px rgba(7, 193, 96, 0.6), 0 0 60px rgba(7, 193, 96, 0.3);
-            }
-        }
-        
-        @keyframes scan {
-            0% {
-                transform: translateY(-100%);
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes particles-float {
-            0%, 100% {
-                transform: translate(0, 0) scale(1);
-            }
-            33% {
-                transform: translate(2px, -2px) scale(1.1);
-            }
-            66% {
-                transform: translate(-2px, 2px) scale(0.9);
-            }
-        }
-        
-        @keyframes glow-pulse {
-            0%, 100% {
-                opacity: 0.8;
-            }
-            50% {
-                opacity: 1;
-            }
-        }
-        
-        /* 微信绿色主题优化 */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--wechat-green) 0%, var(--wechat-green-dark) 100%);
-            box-shadow: 0 4px 16px rgba(7, 193, 96, 0.3);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--wechat-green-dark) 0%, #059A4A 100%);
-            box-shadow: 0 6px 20px rgba(7, 193, 96, 0.4);
-        }
+        body { background: #030712; color: #f8fafc; font-family: 'PingFang SC', sans-serif; }
+        .crystal-card { background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(139, 92, 246, 0.2); }
+        .gradient-text { background: linear-gradient(135deg, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .choice-btn { background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); transition: all 0.3s; }
+        .choice-btn:hover { background: rgba(139, 92, 246, 0.25); transform: translateY(-2px); }
+        .chat-container::-webkit-scrollbar { width: 4px; }
+        .chat-container::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
     </style>
 </head>
-<body class="flex justify-center h-screen">
+<body class="flex flex-col items-center justify-start min-h-screen p-4">
 
-    <div class="w-full max-w-[var(--container-max-width)] flex flex-col relative bg-black shadow-2xl border-x border-zinc-900">
+    <div id="input-step" class="w-full max-w-md animate__animated animate__fadeIn py-10">
+        <h1 class="text-4xl font-black text-center mb-2 gradient-text">时空镜像</h1>
+        <p class="text-slate-500 text-center mb-8 text-xs tracking-[0.3em]">TIME MIRROR · 命运重构</p>
         
-        <main id="view-chat" class="view-section active-view">
-            <!-- 灵动岛巡视组件 -->
-            <div id="chat-status-island" class="glass-card p-4 mb-6 border border-white/10 rounded-2xl">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-3">
-                        <div class="relative ai-avatar-container">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--wechat-green)] via-[var(--wechat-green-light)] to-[var(--wechat-green-dark)] flex items-center justify-center relative overflow-hidden ai-avatar">
-                                <!-- 数字化扫描线效果 -->
-                                <div class="absolute inset-0 ai-scanline"></div>
-                                <!-- 粒子效果背景 -->
-                                <div class="absolute inset-0 ai-particles"></div>
-                                <!-- AI图标 -->
-                                <svg class="w-6 h-6 text-white relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 1 14 18.469V19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547a5 5 0 0 1 0-7.072l.548-.547A3.374 3.374 0 0 1 6 5.53V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v.531c0 .895.356 1.754.988 2.386l.548.547a5 5 0 0 1 0 7.072l-.548.547A3.374 3.374 0 0 1 14 18.469V19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                </svg>
-                                <!-- 外圈光晕 -->
-                                <div class="absolute inset-0 rounded-full ai-glow"></div>
-                            </div>
-                            <div class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[var(--wechat-green)] rounded-full border-2 border-black animate-pulse ai-status-dot">
-                                <div class="absolute inset-0 rounded-full bg-[var(--wechat-green)] animate-ping opacity-75"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold text-white mb-0.5" id="ai-status-text">正在分析决策请求...</p>
-                            <p class="text-[10px] text-zinc-400" id="ai-status-subtext">实时监控中</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-zinc-500 mb-1">今日处理</p>
-                        <p class="text-lg font-bold text-white"><span id="today-processed">0</span></p>
-                    </div>
-                </div>
+        <div class="crystal-card rounded-3xl p-8 shadow-2xl">
+            <div class="space-y-5">
+                <input type="text" id="userName" placeholder="输入你的姓名" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-white focus:ring-2 focus:ring-purple-500 outline-none">
                 
-                <!-- 数据统计 -->
-                <div class="grid grid-cols-4 gap-3 pt-3 border-t border-white/5">
-                    <div class="text-center">
-                        <p class="text-[10px] text-zinc-500 mb-1">待办</p>
-                        <p class="text-sm font-bold text-[var(--accent-blue)]"><span id="stat-pending">3</span></p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-[10px] text-zinc-500 mb-1">已处理</p>
-                        <p class="text-sm font-bold text-green-500"><span id="stat-processed">0</span></p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-[10px] text-zinc-500 mb-1">分析中</p>
-                        <p class="text-sm font-bold text-yellow-500"><span id="stat-analyzing">0</span></p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-[10px] text-zinc-500 mb-1">监控</p>
-                        <p class="text-sm font-bold text-purple-500"><span id="stat-monitoring">24/7</span></p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mb-8 flex items-center space-x-3">
-                <div class="w-2 h-2 rounded-full bg-[var(--accent-blue)] animate-pulse"></div>
-                <span class="text-xs font-bold tracking-widest text-zinc-400">待办决策 · <span id="task-count">3</span></span>
-            </div>
-
-            <div class="space-y-6" id="chat-container">
-                <div class="flex space-x-3 task-item transition-all duration-500" id="task-1">
-                    <img src="me.png" class="avatar-box" alt="助手">
-                    <div class="flex-1 glass-card p-5">
-                        <div class="flex justify-between mb-3 text-[10px] font-bold uppercase tracking-tight">
-                            <span class="text-[var(--wechat-green)]">字节跳动 VP</span>
-                            <span class="text-zinc-600">刚才</span>
-                        </div>
-                        <p class="text-[14px] text-zinc-200 mb-5 leading-relaxed">关于<span class="text-[var(--wechat-green)] font-bold">排他协议</span>，如果无法缩短至 3 个月，我们可能无法推进 Q1 预算。</p>
-                        <div class="bg-white/5 border border-white/5 p-4 rounded-xl mb-5 text-sm italic text-zinc-300 leading-relaxed">拟稿："时长可议，但需置换 S 级资源。"</div>
-                        <div class="flex gap-2">
-                            <button onclick="chatActions.send('task-1')" class="flex-1 btn-primary h-11 rounded-xl text-xs font-bold text-white">确认发送</button>
-                            <button onclick="chatActions.edit()" class="px-5 btn-ghost text-zinc-300 h-11 rounded-xl text-xs font-bold">修改</button>
-                        </div>
-                    </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="date" id="birthDate" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-white text-sm">
+                    <select id="gender" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-white">
+                        <option value="female">女性</option>
+                        <option value="male">男性</option>
+                    </select>
                 </div>
 
-                <div class="flex space-x-3 task-item transition-all duration-500" id="task-2">
-                    <img src="me.png" class="avatar-box" alt="助手">
-                    <div class="flex-1 glass-card p-5 border-l-2 border-zinc-700/50">
-                        <div class="flex justify-between mb-3 text-[10px] font-bold">
-                            <span class="text-zinc-400">研发总监 老陈</span>
-                            <span class="text-zinc-600">10分钟前</span>
-                        </div>
-                        <p class="text-[14px] text-zinc-200 mb-5 leading-relaxed">IDC 节点出现瞬间波动，已自动执行 <span class="text-zinc-400 underline">备用链路切换</span>，目前服务稳定。</p>
-                        <button onclick="chatActions.send('task-2')" class="w-full btn-secondary text-white h-11 rounded-xl text-xs font-bold">确认并知晓</button>
-                    </div>
+                <div>
+                    <label class="block text-[10px] text-slate-500 mb-2 ml-1 uppercase">出生时辰（选填）</label>
+                    <select id="birthHour" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-white">
+                        <option value="">不详 / 不选择</option>
+                        <option value="子">子时 (23:00-01:00)</option>
+                        <option value="丑">丑时 (01:00-03:00)</option>
+                        <option value="寅">寅时 (03:00-05:00)</option>
+                        <option value="卯">卯时 (05:00-07:00)</option>
+                        <option value="辰">辰时 (07:00-09:00)</option>
+                        <option value="巳">巳时 (09:00-11:00)</option>
+                        <option value="午">午时 (11:00-13:00)</option>
+                        <option value="未">未时 (13:00-15:00)</option>
+                        <option value="申">申时 (15:00-17:00)</option>
+                        <option value="酉">酉时 (17:00-19:00)</option>
+                        <option value="戌">戌时 (19:00-21:00)</option>
+                        <option value="亥">亥时 (21:00-23:00)</option>
+                    </select>
                 </div>
 
-                <div class="flex space-x-3 task-item transition-all duration-500" id="task-3">
-                    <img src="me.png" class="avatar-box" alt="助手">
-                    <div class="flex-1 glass-card p-5">
-                        <div class="flex justify-between mb-3 text-[10px] font-bold">
-                            <span class="text-zinc-400">财务审核部</span>
-                            <span class="text-zinc-600">1小时前</span>
-                        </div>
-                        <p class="text-[14px] text-zinc-200 mb-5 leading-relaxed">Q1 季度预算报表已生成，核心支出增长 <span class="text-red-500">12%</span>，是否现在调阅详细项？</p>
-                        <div class="flex gap-2">
-                            <button onclick="chatActions.send('task-3')" class="flex-1 btn-secondary text-white h-11 rounded-xl text-xs font-bold">查阅明细</button>
-                            <button onclick="chatActions.send('task-3')" class="px-5 btn-ghost text-zinc-300 h-11 rounded-xl text-xs font-bold">忽略</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="chat-empty" class="hidden text-center py-32">
-                <div class="inline-flex flex-col items-center space-y-4">
-                    <div class="w-16 h-16 rounded-full bg-zinc-900/50 flex items-center justify-center mb-2">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-500">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
-                    </div>
-                    <p class="text-zinc-500 text-sm font-medium tracking-wider">所有决策已处理完毕</p>
-                    <p class="text-zinc-700 text-xs italic">一切就绪，等待新的任务</p>
-                </div>
-            </div>
-        </main>
-
-        <section id="view-assets" class="view-section hidden-view">
-            <div class="mb-6 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-2 h-2 rounded-full bg-[var(--accent-blue)]"></div>
-                    <h2 class="text-xl font-bold tracking-tight">知识资产</h2>
-                </div>
-                <div class="flex flex-col items-end">
-                    <button onclick="assetActions.upload()" class="upload-btn glass-card px-4 py-2 flex items-center space-x-2 border border-white/10 hover:border-[var(--wechat-green)]/50 transition-all">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <span class="text-xs font-semibold text-zinc-300">上传</span>
-                    </button>
-                    <p class="text-[9px] text-zinc-600 mt-1.5">支持 Word、Excel、PDF 文件</p>
-                </div>
-            </div>
-            <div class="space-y-4" id="assets-list">
-                <!-- 资产卡片将通过 JavaScript 动态生成 -->
-            </div>
-        </section>
-
-        <section id="view-wechat" class="view-section hidden-view">
-            <div class="mb-6 flex items-center space-x-3">
-                <div class="w-2 h-2 rounded-full bg-[var(--accent-blue)]"></div>
-                <h2 class="text-xl font-bold tracking-tight">微信影子跟踪</h2>
-            </div>
-            
-            <!-- 头部统计信息 -->
-            <div class="glass-card p-5 mb-6 border-l-4 border-[var(--wechat-green)]">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <p class="text-xs text-zinc-400 mb-1">今日已吸收</p>
-                        <p class="text-2xl font-bold text-white"><span id="wechat-total-count">0</span> 条信息</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs text-zinc-400 mb-1">决策点</p>
-                        <p class="text-xl font-bold text-[var(--wechat-green)]"><span id="wechat-decision-count">0</span></p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs text-zinc-400 mb-1">噪音过滤</p>
-                        <p class="text-xl font-bold text-zinc-500"><span id="wechat-noise-count">0</span></p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2 text-[10px] text-zinc-500">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Mac Mini 定时巡检中 · 每 30 秒更新</span>
-                </div>
-            </div>
-            
-            <!-- 消息列表 -->
-            <div class="space-y-3" id="wechat-messages">
-                <!-- 消息将通过 JavaScript 动态生成 -->
-            </div>
-        </section>
-
-        <section id="view-log" class="view-section hidden-view">
-            <div class="mb-6 flex items-center space-x-3">
-                <div class="w-2 h-2 rounded-full bg-[var(--accent-blue)]"></div>
-                <h2 class="text-xl font-bold tracking-tight">活动日志</h2>
-            </div>
-            <div class="flex space-x-3 overflow-x-auto mb-8 pb-2 scrollbar-hide">
-                <div class="flex-shrink-0 px-5 py-3 date-chip active rounded-2xl text-xs font-black" data-date="2026-02-01" onclick="logActions.selectDate('2026-02-01', this)">2月1日</div>
-                <div class="flex-shrink-0 px-5 py-3 date-chip bg-zinc-900/80 text-zinc-400 rounded-2xl text-xs" data-date="2026-01-31" onclick="logActions.selectDate('2026-01-31', this)">1月31日</div>
-                <div class="flex-shrink-0 px-5 py-3 date-chip bg-zinc-900/80 text-zinc-400 rounded-2xl text-xs" data-date="2026-01-30" onclick="logActions.selectDate('2026-01-30', this)">1月30日</div>
-                <button onclick="logActions.openCalendar()" class="w-11 h-11 btn-ghost rounded-2xl flex items-center justify-center">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <button onclick="startAnalysis()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-5 rounded-2xl shadow-lg hover:brightness-110 active:scale-95 transition mt-4">
+                    观测命运镜像
                 </button>
-            </div>
-            
-            <div id="log-content" class="space-y-8 pl-4 border-l-2 border-zinc-800/50 ml-2 transition-opacity duration-300">
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-[var(--accent-blue)] log-dot border-2 border-black"></div>
-                    <p class="text-[10px] text-zinc-500 mb-1 uppercase tracking-tighter font-semibold">15:30 / 决策发送</p>
-                    <p class="text-[13px] text-zinc-300 italic font-medium leading-relaxed">向字节跳动发送了修订后的排他条款回复。</p>
-                </div>
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-zinc-700 log-dot border-2 border-black"></div>
-                    <p class="text-[10px] text-zinc-600 mb-1 uppercase font-semibold">14:20 / 知识吸收</p>
-                    <p class="text-[13px] text-zinc-400 italic leading-relaxed">解析《2026排他准则》，更新决策逻辑。</p>
-                </div>
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-zinc-700 log-dot border-2 border-black"></div>
-                    <p class="text-[10px] text-zinc-600 mb-1 uppercase font-semibold">12:00 / 自动审批</p>
-                    <p class="text-[13px] text-zinc-400 italic leading-relaxed">已自动打回老陈的超限差旅报销申请。</p>
-                </div>
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-zinc-700 log-dot border-2 border-black"></div>
-                    <p class="text-[10px] text-zinc-600 mb-1 uppercase font-semibold">10:45 / 系统维护</p>
-                    <p class="text-[13px] text-zinc-400 italic leading-relaxed">IDC 波动确认已解决，备用链路正常运行。</p>
-                </div>
-                <div class="relative log-item opacity-50">
-                    <div class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-zinc-800 log-dot border-2 border-black"></div>
-                    <p class="text-[10px] text-zinc-700 mb-1 italic font-semibold">09:00 / 简报生成：今日行业动态已汇总</p>
-                </div>
-                <div class="text-[10px] text-zinc-700 uppercase font-black py-4 tracking-wider">2026年1月31日</div>
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full bg-zinc-800 log-dot border-2 border-black"></div>
-                    <p class="text-[12px] text-zinc-500 italic">21:30 / 自动改签明日去深圳的航班。</p>
-                </div>
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full bg-zinc-800 log-dot border-2 border-black"></div>
-                    <p class="text-[12px] text-zinc-500 italic">19:00 / 吸收《个人沟通偏好模型》权重。</p>
-                </div>
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full bg-zinc-800 log-dot border-2 border-black"></div>
-                    <p class="text-[12px] text-zinc-500 italic">16:00 / 自动忽略 42 封低优先级垃圾邮件。</p>
-                </div>
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full bg-zinc-800 log-dot border-2 border-black"></div>
-                    <p class="text-[12px] text-zinc-500 italic">14:00 / 核心管理层会议要点已自动速记。</p>
-                </div>
-                <div class="relative log-item">
-                    <div class="absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full bg-zinc-800 log-dot border-2 border-black"></div>
-                    <p class="text-[12px] text-zinc-500 italic">10:00 / 财务异常预警：办公耗材支出超出红线。</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 日历弹窗 -->
-        <div id="calendar-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target === this) logActions.closeCalendar()">
-            <div class="glass-card p-6 max-w-sm w-full mx-4 relative" onclick="event.stopPropagation()">
-                <button onclick="logActions.closeCalendar()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-800 transition-colors">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-400">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-                <h3 id="calendar-month" class="text-lg font-bold mb-4 text-center">2026年2月</h3>
-                <div id="calendar-grid"></div>
             </div>
         </div>
+    </div>
 
-        <div class="nav-mask"></div>
-        <footer class="absolute bottom-0 inset-x-0 h-[var(--nav-height)] flex justify-between items-center px-12 pb-8 z-[100]">
-            <button onclick="app.switchView('assets')" id="nav-assets" class="nav-icon opacity-40"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button>
-            <div class="flex justify-center -mt-10">
-                <button id="main-action-btn" class="w-[72px] h-[72px] bg-white rounded-full flex items-center justify-center shadow-xl border-4 border-black transition-all" onclick="app.switchView('chat')" oncontextmenu="event.preventDefault(); app.switchView('wechat'); return false;">
-                    <svg id="icon-voice" class="main-icon w-7 h-7 transition-all duration-300" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                        <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4m-4 0h8"/>
-                    </svg>
-                    <svg id="icon-message" class="main-icon w-7 h-7 transition-all duration-300 hidden" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                </button>
-            </div>
-            <button onclick="app.switchView('log')" id="nav-log" class="nav-icon opacity-40"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
-        </footer>
+    <div id="loading-step" class="hidden flex flex-col items-center mt-32">
+        <div class="w-16 h-16 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin mb-6"></div>
+        <p class="text-purple-400 font-mono animate-pulse tracking-widest">正在拨动时空指针...</p>
+    </div>
+
+    <div id="result-step" class="hidden w-full max-w-2xl animate__animated animate__fadeInUp">
+        <div class="crystal-card rounded-3xl p-8 mb-8 border-l-4 border-l-purple-500">
+            <h2 class="text-amber-400 text-xs font-bold mb-2 tracking-widest uppercase">命盘推演结果</h2>
+            <div id="destiny-report" class="text-slate-200 leading-relaxed space-y-4">
+                </div>
+        </div>
+        
+        <h3 class="text-center text-slate-500 text-xs mb-6 tracking-widest uppercase">点击下方镜像 · 开启沉浸人生</h3>
+        <div id="role-list" class="grid md:grid-cols-3 gap-6"></div>
+    </div>
+
+    <div id="drama-step" class="hidden w-full max-w-lg h-[90vh] crystal-card rounded-[2rem] overflow-hidden flex flex-col animate__animated animate__zoomIn">
+        <div class="p-5 border-b border-white/5 bg-black/20 flex justify-between items-center">
+            <button onclick="location.reload()" class="text-slate-500 text-xs hover:text-white">← 退出</button>
+            <span id="active-role-name" class="font-bold text-purple-300">角色名</span>
+            <div class="w-8"></div>
+        </div>
+        
+        <div id="chat-box" class="flex-1 p-6 overflow-y-auto space-y-6 chat-container"></div>
+        
+        <div id="choice-box" class="p-6 bg-black/40 backdrop-blur-md space-y-3"></div>
     </div>
 
     <script>
-        const app = {
-            currentView: 'chat',
-            switchView(target) {
-                this.currentView = target;
-                ['chat', 'assets', 'log', 'wechat'].forEach(v => {
-                    const el = document.getElementById(`view-${v}`);
-                    if (el) {
-                    if (v === target) el.classList.replace('hidden-view', 'active-view');
-                    else el.classList.replace('active-view', 'hidden-view');
-                    }
-                });
-                
-                // 更新主按钮图标
-                const iconVoice = document.getElementById('icon-voice');
-                const iconMessage = document.getElementById('icon-message');
-                
-                if (target === 'chat') {
-                    // 切换到聊天视图，显示麦克风图标
-                    if (iconVoice) iconVoice.classList.remove('hidden');
-                    if (iconMessage) iconMessage.classList.add('hidden');
-                    // 启动AI状态系统
-                    aiStatusSystem.start();
-                    // 更新统计数据
-                    chatActions.updateStats();
-                } else {
-                    // 切换到其他视图，显示信息图标
-                    if (iconVoice) iconVoice.classList.add('hidden');
-                    if (iconMessage) iconMessage.classList.remove('hidden');
-                    // 停止AI状态系统
-                    aiStatusSystem.stop();
+        // --- 剧本库逻辑 ---
+        const DATABASE = {
+            male: [
+                { 
+                    name: "苏东坡", 
+                    report: "你的命格‘财星带印’，天生拥有将苦难转化为艺术的魔力。你现在正处于人生的‘贬谪期’，内心虽有挣扎，但那股豁达的灵性正破土而出。",
+                    scenes: [
+                        {
+                            text: "（公元1082年，黄州。你站在荒芜的东坡地头，手握锄头，肚中空空。）\n苏东坡：‘小友，朝廷不仅夺了我的官位，还想夺了我的胃。这块荒地，咱们是种诗，还是种粮？’",
+                            choices: [
+                                { t: "种粮！先活下去，自创‘东坡肉’犒劳自己。", next: "下一步，你不仅填饱了肚子，还成了当地的美食博主，百姓爱戴，心境大开。" },
+                                { t: "种诗！在这盖个‘雪堂’，请朋友来喝酒写词。", next: "雪堂落成，你写出了《赤壁赋》，虽然身体消瘦，但灵魂已入圣境。" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "王阳明",
+                    report: "‘七杀化印’。你目前面临着极大的外部压力，这种压力并非为了摧毁你，而是为了让你在孤独中‘悟道’。你内心的光明即将照亮至暗时刻。",
+                    scenes: [
+                        {
+                            text: "（贵州龙场。你躺在石棺中，四周是毒虫和瘴气。）\n王阳明：‘圣人之道，吾性自足。小友，若你身处此绝境，是怨天尤人，还是内求本心？’",
+                            choices: [
+                                { t: "随他去吧，在痛苦中静坐，感受呼吸。", next: "你于半夜惊雷中豁然大悟：‘格物致知，不如致良知！’你创下心学。" },
+                                { t: "写信求援，这种鬼地方一分钟也待不下去。", next: "信件石沉大海。你在绝望中明白，唯一的出路只有向上生长。" }
+                            ]
+                        }
+                    ]
                 }
-                
-                // 更新导航图标状态
-                const navAssets = document.getElementById('nav-assets');
-                const navLog = document.getElementById('nav-log');
-                const mainBtn = document.getElementById('main-action-btn');
-                
-                // 重置所有导航图标
-                [navAssets, navLog].forEach(nav => {
-                    if (nav) {
-                        nav.classList.remove('active');
-                        nav.classList.add('opacity-40');
-                    }
-                });
-                
-                // 激活当前视图的导航图标
-                if (target === 'assets') {
-                    if (navAssets) {
-                        navAssets.classList.add('active');
-                        navAssets.classList.remove('opacity-40');
-                    }
-                    // 确保知识资产列表已渲染
-                    if (document.getElementById('assets-list') && !document.getElementById('assets-list').innerHTML.trim()) {
-                        assetActions.renderAssets();
-                    }
-                } else if (target === 'log') {
-                    if (navLog) {
-                        navLog.classList.add('active');
-                        navLog.classList.remove('opacity-40');
-                    }
-                } else if (target === 'wechat') {
-                    // 启动微信监控
-                    wechatTracking.startMonitoring();
-                } else {
-                    // 停止微信监控（切换到其他视图时）
-                    wechatTracking.stopMonitoring();
+            ],
+            female: [
+                { 
+                    name: "李清照", 
+                    report: "‘食神配印’，清高且敏锐。你对时代变革的感知远超常人，这种敏感让你痛苦，也让你伟大。你正在寻找那个能承载你情感的容器。",
+                    scenes: [
+                        {
+                            text: "（青州。你与丈夫赵明诚在书斋中，面前是价值连城的金石古物。）\n李清照：‘金兵已破汴京，这些文物是我们半生的心血，也是民族的记忆。弃，还是守？’",
+                            choices: [
+                                { t: "死守！哪怕颠沛流离，也要带着这些文明的火种。", next: "你带着半车书画南逃，虽然晚景凄凉，但你留下的《金石录》成了永恒。" },
+                                { t: "弃物保命！人不在了，东西还有什么意义？", next: "你保全了性命，但在南方的烟雨中，你总会想起那些消失的字画，写下了‘寻寻觅觅，冷冷清清’。" }
+                            ]
+                        }
+                    ]
                 }
-            }
-        };
-
-        const chatActions = {
-            tasks: 3,
-            processed: 0,
-            analyzing: 0,
-            
-            send(id) {
-                const el = document.getElementById(id);
-                el.style.transform = "translateX(110%)";
-                el.style.opacity = "0";
-                setTimeout(() => {
-                    el.style.display = "none";
-                    this.tasks--;
-                    this.processed++;
-                    document.getElementById('task-count').innerText = this.tasks;
-                    this.updateStats();
-                    if(this.tasks === 0) document.getElementById('chat-empty').classList.remove('hidden');
-                }, 500);
-            },
-            edit() {
-                const res = prompt("输入或语音录入修改指令：");
-    if(res) alert(`正在处理指令："${res}"...`);
-},
-            
-            updateStats() {
-                const pendingEl = document.getElementById('stat-pending');
-                const processedEl = document.getElementById('stat-processed');
-                const analyzingEl = document.getElementById('stat-analyzing');
-                const todayEl = document.getElementById('today-processed');
-                
-                if (pendingEl) pendingEl.textContent = this.tasks;
-                if (processedEl) processedEl.textContent = this.processed;
-                if (analyzingEl) analyzingEl.textContent = this.analyzing;
-                if (todayEl) todayEl.textContent = this.processed + this.tasks;
-            }
-        };
-        
-        // AI状态巡视系统
-        const aiStatusSystem = {
-            statusInterval: null,
-            statusMessages: [
-                { text: '正在分析决策请求...', subtext: '实时监控中' },
-                { text: '正在评估风险等级...', subtext: '深度分析中' },
-                { text: '正在生成决策建议...', subtext: '智能处理中' },
-                { text: '正在检查合规性...', subtext: '规则匹配中' },
-                { text: '正在优化回复方案...', subtext: '策略生成中' },
-                { text: '正在监控新消息...', subtext: '持续巡视中' },
-                { text: '正在学习新知识...', subtext: '知识更新中' },
-                { text: '正在同步决策逻辑...', subtext: '系统优化中' }
-            ],
-            currentIndex: 0,
-            
-            start() {
-                // 立即更新一次
-                this.updateStatus();
-                
-                // 每3-5秒随机切换状态
-                this.statusInterval = setInterval(() => {
-                    this.updateStatus();
-                }, 3000 + Math.random() * 2000);
-            },
-            
-            stop() {
-                if (this.statusInterval) {
-                    clearInterval(this.statusInterval);
-                    this.statusInterval = null;
-                }
-            },
-            
-            updateStatus() {
-                const statusText = document.getElementById('ai-status-text');
-                const statusSubtext = document.getElementById('ai-status-subtext');
-                
-                if (!statusText || !statusSubtext) return;
-                
-                // 随机选择一个状态（避免连续相同）
-                let newIndex;
-                do {
-                    newIndex = Math.floor(Math.random() * this.statusMessages.length);
-                } while (newIndex === this.currentIndex && this.statusMessages.length > 1);
-                
-                this.currentIndex = newIndex;
-                const status = this.statusMessages[this.currentIndex];
-                
-                // 淡出效果
-                statusText.style.opacity = '0.5';
-                statusSubtext.style.opacity = '0.5';
-                
-                setTimeout(() => {
-                    statusText.textContent = status.text;
-                    statusSubtext.textContent = status.subtext;
-                    
-                    // 淡入效果
-                    statusText.style.opacity = '1';
-                    statusSubtext.style.opacity = '1';
-                }, 200);
-            }
-        };
-        
-        // 初始化AI状态系统
-        document.addEventListener('DOMContentLoaded', () => {
-            // 只在聊天视图启动
-            if (app.currentView === 'chat') {
-                aiStatusSystem.start();
-            }
-        });
-
-        // 日志数据
-        const logData = {
-            '2026-02-01': [
-                { time: '15:30', type: '决策发送', content: '向字节跳动发送了修订后的排他条款回复。', highlight: true },
-                { time: '14:20', type: '知识吸收', content: '解析《2026排他准则》，更新决策逻辑。', highlight: false },
-                { time: '12:00', type: '自动审批', content: '已自动打回老陈的超限差旅报销申请。', highlight: false },
-                { time: '10:45', type: '系统维护', content: 'IDC 波动确认已解决，备用链路正常运行。', highlight: false },
-                { time: '09:00', type: '简报生成', content: '今日行业动态已汇总', highlight: false, faded: true }
-            ],
-            '2026-01-31': [
-                { time: '21:30', type: '', content: '自动改签明日去深圳的航班。', highlight: false },
-                { time: '19:00', type: '', content: '吸收《个人沟通偏好模型》权重。', highlight: false },
-                { time: '16:00', type: '', content: '自动忽略 42 封低优先级垃圾邮件。', highlight: false },
-                { time: '14:00', type: '', content: '核心管理层会议要点已自动速记。', highlight: false },
-                { time: '10:00', type: '', content: '财务异常预警：办公耗材支出超出红线。', highlight: false }
-            ],
-            '2026-01-30': [
-                { time: '18:00', type: '系统更新', content: '完成核心决策引擎版本升级至 v3.2。', highlight: false },
-                { time: '15:30', type: '知识吸收', content: '学习并整合新的行业合规标准。', highlight: false },
-                { time: '12:00', type: '自动审批', content: '批准了 5 项常规采购申请。', highlight: false },
-                { time: '09:00', type: '简报生成', content: '生成周度业务分析报告。', highlight: false }
             ]
         };
 
-        const logActions = {
-            currentDate: '2026-02-01',
-            
-            selectDate(date, element) {
-                this.currentDate = date;
-                
-                // 更新日期选择器状态
-                document.querySelectorAll('.date-chip').forEach(chip => {
-                    chip.classList.remove('active');
-                    chip.classList.remove('bg-white', 'text-black', 'font-black');
-                    chip.classList.add('bg-zinc-900/80', 'text-zinc-400');
-                });
-                
-                if (element) {
-                    element.classList.add('active');
-                    element.classList.remove('bg-zinc-900/80', 'text-zinc-400');
-                    element.classList.add('bg-white', 'text-black', 'font-black');
-                }
-                
-                // 加载对应日期的日志
-                this.loadLogs(date);
-            },
-            
-            loadLogs(date) {
-                const content = document.getElementById('log-content');
-                const logs = logData[date] || [];
-                
-                // 淡出效果
-                content.style.opacity = '0.3';
-                
-                setTimeout(() => { 
-                    // 生成日志HTML
-                    let html = '';
-                    
-                    // 添加日期分隔符
-                    const logDate = new Date(date);
-                    const dateStr = `${logDate.getFullYear()}年${logDate.getMonth() + 1}月${logDate.getDate()}日`;
-                    html += `<div class="text-[10px] text-zinc-700 uppercase font-black py-4 tracking-wider">${dateStr}</div>`;
-                    
-                    // 生成日志条目
-                    logs.forEach((log) => {
-                        const dotSize = log.highlight ? 'w-3 h-3' : 'w-2.5 h-2.5';
-                        const dotColor = log.highlight ? 'bg-[var(--accent-blue)]' : (log.faded ? 'bg-zinc-800' : 'bg-zinc-700');
-                        const textColor = log.highlight ? 'text-zinc-300' : (log.faded ? 'text-zinc-500' : 'text-zinc-400');
-                        const timeColor = log.highlight ? 'text-zinc-500' : (log.faded ? 'text-zinc-700' : 'text-zinc-600');
-                        const faded = log.faded ? 'opacity-50' : '';
-                        const fontSize = log.type ? '13px' : '12px';
-                        
-                        html += `
-                            <div class="relative log-item ${faded}">
-                                <div class="absolute -left-[25px] top-1 ${dotSize} rounded-full ${dotColor} log-dot border-2 border-black"></div>
-                                ${log.type ? `<p class="text-[10px] ${timeColor} mb-1 uppercase tracking-tighter font-semibold">${log.time} / ${log.type}</p>` : ''}
-                                <p class="text-[${fontSize}] ${textColor} ${log.type ? 'italic font-medium' : 'italic'} leading-relaxed">${log.type ? '' : log.time + ' / '}${log.content}</p>
-                            </div>
-                        `;
-                    });
-                    
-                    content.innerHTML = html;
-                    
-                    // 淡入效果
-                    content.style.opacity = '1'; 
-                }, 200);
-            },
-            
-            openCalendar() {
-                const calendarModal = document.getElementById('calendar-modal');
-                if (calendarModal) {
-                    calendarModal.classList.remove('hidden');
-                    this.renderCalendar();
-                }
-            },
-            
-            closeCalendar() {
-                const calendarModal = document.getElementById('calendar-modal');
-                if (calendarModal) {
-                    calendarModal.classList.add('hidden');
-                }
-            },
-            
-            renderCalendar() {
-                const calendarGrid = document.getElementById('calendar-grid');
-                if (!calendarGrid) return;
-                
-                // 使用当前选中的日期，如果没有则使用今天
-                const selectedDate = new Date(this.currentDate || new Date());
-                const year = selectedDate.getFullYear();
-                const month = selectedDate.getMonth();
-                
-                // 获取当月第一天和最后一天
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-                const daysInMonth = lastDay.getDate();
-                const startingDayOfWeek = firstDay.getDay();
-                
-                // 生成日历HTML
-                let html = '';
-                
-                // 星期标题
-                const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-                html += '<div class="grid grid-cols-7 gap-2 mb-3">';
-                weekDays.forEach(day => {
-                    html += `<div class="text-center text-xs text-zinc-500 font-semibold py-2">${day}</div>`;
-                });
-                html += '</div>';
-                
-                // 日期网格
-                html += '<div class="grid grid-cols-7 gap-2">';
-                
-                // 填充空白
-                for (let i = 0; i < startingDayOfWeek; i++) {
-                    html += '<div></div>';
-                }
-                
-                // 填充日期
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const hasLogs = logData[dateStr] !== undefined;
-                    const today = new Date();
-                    const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                    const isSelected = dateStr === this.currentDate;
-                    
-                    let classes = 'calendar-day text-center py-2 rounded-lg text-sm transition-all cursor-pointer';
-                    
-                    if (isSelected) {
-                        classes += ' bg-white text-black font-bold';
-                    } else if (isToday) {
-                        classes += ' bg-zinc-800 text-white border border-zinc-700';
-                    } else if (hasLogs) {
-                        classes += ' bg-zinc-900/50 text-zinc-300 hover:bg-zinc-800';
-                    } else {
-                        classes += ' text-zinc-600 hover:bg-zinc-900/30';
-                    }
-                    
-                    html += `<div class="${classes}" data-date="${dateStr}" onclick="logActions.selectDateFromCalendar('${dateStr}')">${day}</div>`;
-                }
-                
-                html += '</div>';
-                
-                calendarGrid.innerHTML = html;
-                
-                // 更新月份显示
-                const monthDisplay = document.getElementById('calendar-month');
-                if (monthDisplay) {
-                    monthDisplay.textContent = `${year}年${month + 1}月`;
-                }
-            },
-            
-            selectDateFromCalendar(dateStr) {
-                this.closeCalendar();
-                
-                // 查找对应的日期选择器元素
-                const dateChips = document.querySelectorAll('.date-chip');
-                let targetElement = null;
-                
-                // 检查是否在快速选择列表中
-                dateChips.forEach(chip => {
-                    if (chip.dataset.date === dateStr) {
-                        targetElement = chip;
-                    }
-                });
-                
-                // 选择日期（如果找到对应的元素则更新UI，否则只更新日志内容）
-                if (targetElement) {
-                    this.selectDate(dateStr, targetElement);
-                } else {
-                    // 如果不在快速选择列表中，只更新日志内容
-                    this.currentDate = dateStr;
-                    this.loadLogs(dateStr);
-                }
-            }
-        };
-        
-        // 初始化加载默认日期的日志
-        document.addEventListener('DOMContentLoaded', () => {
-            logActions.loadLogs('2026-02-01');
-        });
+        let activeRole = null;
 
-        // 知识资产数据
-        const assetsData = [
-            {
-                name: '2026战略合作排他准则.pdf',
-                badge: null,
-                highlighted: true,
-                aiExtract: '提取了排他协议核心规则：12个月期限上限、对等接口权限要求、违约金需覆盖3年收益。已应用于战略合作决策流程。',
-                summary: '规定了战略合作伙伴关系的排他性条款，核心约束包括：合作期限上限12个月，双方享有对等接口权限，违约金需覆盖3年预期收益。适用于S级战略资源置换场景。',
-                keywords: ['排他协议', '12个月上限', '对等接口权限', '违约金', 'S级资源', '战略合作'],
-                logic: '当收到涉及排他协议的决策请求时，优先检查期限是否超过12个月。若超过，需评估是否匹配S级资源置换。回复时强调对等权限和违约金覆盖3年收益的要求。'
-            },
-            {
-                name: 'CEO 个人沟通偏好模型.json',
-                badge: '已习得',
-                highlighted: false,
-                aiExtract: '提取了紧急处理流程：结论先行、数据驱动、避免不确定词汇。已应用于所有CEO沟通场景。',
-                summary: '基于历史沟通数据训练的CEO沟通风格模型。偏好简洁直接、数据驱动、结果导向的表达方式。避免冗长铺垫，重视时间效率。',
-                keywords: ['沟通风格', '简洁直接', '数据驱动', '结果导向', '时间效率'],
-                logic: '所有发送给CEO的决策建议和报告，需遵循"结论先行"原则。首句即核心观点，后续用数据支撑。避免使用"可能"、"或许"等不确定词汇。'
-            },
-            {
-                name: '核心管理层期权回购协议.pdf',
-                badge: 'V2.1',
-                highlighted: false,
-                aiExtract: '提取了期权回购标准流程：行权条件检查、估值计算方法、自动生成回购时间表。已应用于期权管理决策。',
-                summary: '定义了核心管理层期权回购的标准流程和定价机制。包含行权条件、回购触发条件、估值方法（基于最近一轮融资估值）和支付时间表。',
-                keywords: ['期权回购', '行权条件', '估值方法', '融资估值', '支付时间表'],
-                logic: '涉及期权回购的审批流程，自动检查是否符合行权条件。估值计算需引用最近一轮融资的估值数据。若触发回购条件，自动生成回购时间表和资金需求预测。'
-            },
-            {
-                name: '研发部 2026 成本红线指标.xlsx',
-                badge: null,
-                highlighted: false,
-                aiExtract: '提取了成本红线检查机制：自动对比预算上限、风险等级标注、CEO审批触发条件。已应用于研发支出审批。',
-                summary: '定义了研发部门2026年各项成本的红线指标。包括人力成本、基础设施、云服务、第三方工具等分类预算上限。超出红线需CEO审批。',
-                keywords: ['成本红线', '人力成本', '基础设施', '云服务', '预算上限', 'CEO审批'],
-                logic: '所有研发相关的支出申请，自动对比成本红线。若接近或超出红线，在决策建议中标注风险等级，并提示需要CEO审批。定期生成成本趋势分析。'
-            },
-            {
-                name: '友商竞品架构异动情报集.txt',
-                badge: null,
-                highlighted: false,
-                aiExtract: '提取了竞品分析框架：技术栈对比、架构优劣评估、竞争视角决策支持。已应用于技术选型决策。',
-                summary: '持续更新的竞品技术架构变化情报。包含技术栈迁移、基础设施调整、新功能架构设计等信息。用于技术决策参考和竞争分析。',
-                keywords: ['竞品分析', '技术架构', '技术栈', '基础设施', '竞争情报'],
-                logic: '当涉及技术选型或架构决策时，自动检索相关竞品情报。在决策建议中对比我方方案与竞品方案的优劣，提供竞争视角的分析。'
-            },
-            {
-                name: 'Q1 融资防御补充条款.doc',
-                badge: null,
-                highlighted: false,
-                aiExtract: '提取了融资防御检查规则：反稀释条款、一票否决权、法务审核触发条件。已应用于重大决策审核。',
-                summary: 'Q1季度融资防御策略的补充条款。包含反稀释条款、优先认购权、董事会席位安排、关键决策一票否决权等保护性条款。',
-                keywords: ['融资防御', '反稀释', '优先认购权', '董事会席位', '一票否决权'],
-                logic: '涉及融资、股权变更、重大决策时，自动检查是否符合防御条款。若存在冲突，在决策建议中明确标注风险，并建议法务部门审核。'
-            },
-            {
-                name: '跨境数据流通准则 2026版.pdf',
-                badge: null,
-                highlighted: false,
-                aiExtract: '提取了数据合规检查流程：数据分类标准、出境审批流程、合规风险标记机制。已应用于跨境数据传输决策。',
-                summary: '2026年最新版跨境数据流通合规准则。明确了数据分类标准、出境审批流程、数据加密要求、存储位置限制等合规要求。',
-                keywords: ['跨境数据', '数据合规', '数据分类', '出境审批', '数据加密', '存储限制'],
-                logic: '涉及数据出境、跨境传输的决策，自动检查是否符合合规准则。根据数据分类（敏感/一般）提供相应的审批流程建议。若存在合规风险，标记为高优先级。'
-            }
-        ];
+        function startAnalysis() {
+            const name = document.getElementById('userName').value;
+            if(!name) return alert("请留下姓名。");
+            
+            document.getElementById('input-step').classList.add('hidden');
+            document.getElementById('loading-step').classList.remove('hidden');
 
-        const assetActions = {
-            showStatusIsland(message) {
-                const island = document.getElementById('status-island');
-                const text = island.querySelector('.status-island-text');
-                if (island && text) {
-                    text.textContent = message;
-                    island.classList.add('active');
-                }
-            },
-            
-            hideStatusIsland() {
-                const island = document.getElementById('status-island');
-                if (island) {
-                    island.classList.remove('active');
-                }
-            },
-            
-            generateEvolutionLog(fileName, extractResult) {
-                // 生成进化日志并添加到日志数据中
-                const now = new Date();
-                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            setTimeout(() => {
+                const gender = document.getElementById('gender').value;
+                const roles = DATABASE[gender];
                 
-                // 确保日志数据中存在今天的日期
-                if (!logData[dateStr]) {
-                    logData[dateStr] = [];
-                }
-                
-                // 在日志开头插入新的进化日志
-                logData[dateStr].unshift({
-                    time: timeStr,
-                    type: '知识进化',
-                    content: `完成《${fileName}》分析，${extractResult}`,
-                    highlight: true
-                });
-                
-                // 如果当前在日志视图，刷新显示
-                if (app.currentView === 'log' && logActions.currentDate === dateStr) {
-                    logActions.loadLogs(dateStr);
-                }
-            },
-            
-            simulateAIAnalysis(fileName) {
-                // 模拟AI分析，生成提取结果
-                const extractResults = [
-                    `提取了${fileName.split('.')[0]}的核心规则和决策流程。已应用于相关决策场景。`,
-                    `提取了${fileName.split('.')[0]}的关键约束条件和审批机制。已整合到决策引擎。`,
-                    `提取了${fileName.split('.')[0]}的紧急处理流程和风险控制点。已应用于自动化审批。`,
-                    `提取了${fileName.split('.')[0]}的合规要求和检查标准。已应用于合规决策。`
-                ];
-                
-                return extractResults[Math.floor(Math.random() * extractResults.length)];
-            },
-            
-            upload() {
-                // 创建隐藏的文件输入元素
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.multiple = true;
-                input.accept = '.pdf,.doc,.docx,.xlsx,.xls,.txt,.json,.md';
-                
-                // 获取上传按钮
-                const btn = document.querySelector('.upload-btn');
-                const btnText = btn.querySelector('span');
-                const originalText = btnText.textContent;
-                
-                input.onchange = (e) => {
-                    const files = e.target.files;
-                    if (files.length > 0) {
-                        // 显示上传提示
-                        btnText.textContent = '上传中...';
-                        btn.style.opacity = '0.6';
-                        btn.style.pointerEvents = 'none';
-                        
-                        // 显示灵动岛状态
-                        this.showStatusIsland('正在重构人格记忆...');
-                        
-                        // 模拟上传和分析过程
-                        setTimeout(() => {
-                            // 处理每个文件
-                            files.forEach((file, index) => {
-                                setTimeout(() => {
-                                    // 模拟AI分析
-                                    const extractResult = this.simulateAIAnalysis(file.name);
-                                    
-                                    // 添加到知识资产列表
-                                    const newAsset = {
-                                        name: file.name,
-                                        badge: null,
-                                        highlighted: false,
-                                        aiExtract: extractResult,
-                                        summary: `已上传并分析的文档：${file.name}。AI已完成知识提取和逻辑转化。`,
-                                        keywords: ['新上传', 'AI分析', '知识提取'],
-                                        logic: `该文档的知识已整合到决策引擎中，将在相关场景自动应用。`
-                                    };
-                                    
-                                    assetsData.unshift(newAsset);
-                                    
-                                    // 生成进化日志
-                                    this.generateEvolutionLog(file.name, extractResult);
-                                    
-                                    // 如果是最后一个文件，完成处理
-                                    if (index === files.length - 1) {
-                                        // 刷新资产列表
-                                        setTimeout(() => {
-                                            this.renderAssets();
-                                            
-                                            // 隐藏灵动岛
-                                            setTimeout(() => {
-                                                this.hideStatusIsland();
-                                            }, 500);
-                                            
-                                            // 恢复按钮状态
-                                            btnText.textContent = originalText;
-                                            btn.style.opacity = '1';
-                                            btn.style.pointerEvents = 'auto';
-                                        }, 300);
-                                    }
-                                }, index * 1500); // 每个文件间隔1.5秒
-                            });
-                        }, 500);
-                    }
-                };
-                
-                // 如果用户取消选择，确保按钮状态正常
-                input.oncancel = () => {
-                    btnText.textContent = originalText;
-                    btn.style.opacity = '1';
-                    btn.style.pointerEvents = 'auto';
-                    this.hideStatusIsland();
-                };
-                
-                input.click();
-            },
-            
-            renderAssets() {
-                const container = document.getElementById('assets-list');
-                if (!container) return;
-                
-                container.innerHTML = assetsData.map((asset, index) => {
-                    const borderClass = asset.highlighted ? 'border-l-4 border-[var(--wechat-green)]' : 'border-l-2 border-zinc-700/30';
-                    const badgeHtml = asset.badge ? `<span class="asset-badge">${asset.badge}</span>` : '';
-                    const aiExtractHtml = asset.aiExtract ? `<div class="ai-extract-result">AI 提取结果：${asset.aiExtract}</div>` : '';
-                    
-                    return `
-                        <div class="glass-card asset-card p-5 ${borderClass}" data-index="${index}">
-                            <div class="asset-header">
-                                <div class="flex-1">
-                                    <p class="asset-title">${asset.name}</p>
-                                    ${aiExtractHtml}
-                                </div>
-                                ${badgeHtml}
-                                <button class="asset-expand-btn ml-2" onclick="assetActions.toggleExpand(${index})">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-400">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="asset-details" id="asset-details-${index}">
-                                <div class="asset-section">
-                                    <div class="asset-section-title">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                        </svg>
-                                        核心摘要
-                                    </div>
-                                    <div class="asset-section-content">${asset.summary}</div>
-                                </div>
-                                <div class="asset-section">
-                                    <div class="asset-section-title">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                                        </svg>
-                                        关键词提取
-                                    </div>
-                                    <div class="asset-keywords">
-                                        ${asset.keywords.map(keyword => `<span class="asset-keyword">${keyword}</span>`).join('')}
-                                    </div>
-                                </div>
-                                <div class="asset-section">
-                                    <div class="asset-section-title">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                        </svg>
-                                        分身逻辑转化
-                                    </div>
-                                    <div class="asset-section-content">${asset.logic}</div>
-                                </div>
-                            </div>
+                // 渲染推演结果
+                document.getElementById('destiny-report').innerHTML = `
+                    <p class="text-xl font-bold text-white">命盘判词：${roles[0].report.split('。')[0]}</p>
+                    <p class="text-sm text-slate-400">${roles[0].report.split('。')[1]}</p>
+                `;
+
+                // 渲染角色列表
+                const roleList = document.getElementById('role-list');
+                roleList.innerHTML = '';
+                roles.forEach((r, i) => {
+                    roleList.innerHTML += `
+                        <div onclick="enterDrama('${gender}', ${i})" class="crystal-card p-6 rounded-2xl text-center cursor-pointer hover:border-purple-500 transition shadow-lg">
+                            <h4 class="font-bold text-lg">${r.name}</h4>
+                            <p class="text-[10px] text-purple-400 mt-2">点击体验剧本</p>
                         </div>
                     `;
-                }).join('');
-            },
-            
-            toggleExpand(index) {
-                const card = document.querySelector(`.asset-card[data-index="${index}"]`);
-                const details = document.getElementById(`asset-details-${index}`);
-                const btn = card.querySelector('.asset-expand-btn');
-                
-                if (!card || !details || !btn) return;
-                
-                const isExpanded = card.classList.contains('expanded');
-                
-                if (isExpanded) {
-                    card.classList.remove('expanded');
-                    details.classList.remove('expanded');
-                    btn.classList.remove('expanded');
-                } else {
-                    card.classList.add('expanded');
-                    details.classList.add('expanded');
-                    btn.classList.add('expanded');
-                }
-            },
-            
-            refreshAssets() {
-                this.renderAssets();
-            }
-        };
-        
-        // 微信影子跟踪数据
-        const wechatMessages = [
-            {
-                sender: '字节跳动 VP',
-                time: '15:30',
-                content: '关于排他协议，如果无法缩短至 3 个月，我们可能无法推进 Q1 预算。',
-                type: 'decision',
-                tag: '请示',
-                category: '决策点'
-            },
-            {
-                sender: '研发总监 老陈',
-                time: '14:45',
-                content: 'IDC 节点出现瞬间波动，已自动执行备用链路切换，目前服务稳定。',
-                type: 'decision',
-                tag: '汇报',
-                category: '决策点'
-            },
-            {
-                sender: '财务审核部',
-                time: '14:20',
-                content: 'Q1 季度预算报表已生成，核心支出增长 12%，是否现在调阅详细项？',
-                type: 'decision',
-                tag: '请示',
-                category: '决策点'
-            },
-            {
-                sender: '张总',
-                time: '13:50',
-                content: '👍',
-                type: 'noise',
-                tag: '表情包',
-                category: '噪音'
-            },
-            {
-                sender: '市场部小王',
-                time: '13:45',
-                content: '收到，谢谢老板！',
-                type: 'noise',
-                tag: '确认回复',
-                category: '噪音'
-            },
-            {
-                sender: '李总',
-                time: '13:30',
-                content: '已领取红包',
-                type: 'noise',
-                tag: '领红包',
-                category: '噪音'
-            },
-            {
-                sender: '法务部',
-                time: '12:15',
-                content: '关于期权回购协议的争议条款，需要您确认是否接受对方提出的修改建议。',
-                type: 'decision',
-                tag: '争议',
-                category: '决策点'
-            },
-            {
-                sender: '人事部',
-                time: '11:30',
-                content: '核心管理层期权回购申请已提交，请审批。',
-                type: 'decision',
-                tag: '请示',
-                category: '决策点'
-            },
-            {
-                sender: '产品经理',
-                time: '11:00',
-                content: '😊 好的，明白了',
-                type: 'noise',
-                tag: '表情包',
-                category: '噪音'
-            },
-            {
-                sender: 'CTO',
-                time: '10:45',
-                content: '技术架构调整方案已准备，涉及成本增加约 15%，需要您决策。',
-                type: 'decision',
-                tag: '请示',
-                category: '决策点'
-            }
-        ];
+                });
 
-        const wechatTracking = {
-            monitoringInterval: null,
-            messages: [...wechatMessages],
-            
-            startMonitoring() {
-                // 立即渲染一次
-                this.renderMessages();
-                
-                // 每30秒巡检一次（模拟）
-                this.monitoringInterval = setInterval(() => {
-                    this.simulateNewMessage();
-                }, 30000);
-            },
-            
-            stopMonitoring() {
-                if (this.monitoringInterval) {
-                    clearInterval(this.monitoringInterval);
-                    this.monitoringInterval = null;
-                }
-            },
-            
-            simulateNewMessage() {
-                // 模拟新消息（随机生成）
-                const senders = ['字节跳动 VP', '研发总监 老陈', '财务审核部', '法务部', 'CTO', '市场部小王'];
-                const decisionContents = [
-                    '关于Q2预算调整，需要您确认。',
-                    '新项目启动申请，涉及资金 500 万，请审批。',
-                    '合作伙伴协议条款存在争议，需要您决策。',
-                    '技术选型方案已准备，请确认最终方案。'
-                ];
-                const noiseContents = [
-                    '👍',
-                    '收到，谢谢！',
-                    '已领取红包',
-                    '😊 好的',
-                    '明白了'
-                ];
-                
-                const isDecision = Math.random() > 0.4; // 60% 概率是决策点
-                const sender = senders[Math.floor(Math.random() * senders.length)];
-                const now = new Date();
-                const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                
-                const newMessage = {
-                    sender: sender,
-                    time: time,
-                    content: isDecision 
-                        ? decisionContents[Math.floor(Math.random() * decisionContents.length)]
-                        : noiseContents[Math.floor(Math.random() * noiseContents.length)],
-                    type: isDecision ? 'decision' : 'noise',
-                    tag: isDecision ? '请示' : (Math.random() > 0.5 ? '表情包' : '确认回复'),
-                    category: isDecision ? '决策点' : '噪音'
-                };
-                
-                // 添加到消息列表开头
-                this.messages.unshift(newMessage);
-                
-                // 限制消息数量
-                if (this.messages.length > 50) {
-                    this.messages = this.messages.slice(0, 50);
-                }
-                
-                // 重新渲染
-                this.renderMessages();
-            },
-            
-            renderMessages() {
-                const container = document.getElementById('wechat-messages');
-                if (!container) return;
-                
-                const decisionCount = this.messages.filter(m => m.type === 'decision').length;
-                const noiseCount = this.messages.filter(m => m.type === 'noise').length;
-                const totalCount = this.messages.length;
-                
-                // 更新统计
-                const totalEl = document.getElementById('wechat-total-count');
-                const decisionEl = document.getElementById('wechat-decision-count');
-                const noiseEl = document.getElementById('wechat-noise-count');
-                
-                if (totalEl) totalEl.textContent = totalCount;
-                if (decisionEl) decisionEl.textContent = decisionCount;
-                if (noiseEl) noiseEl.textContent = noiseCount;
-                
-                // 渲染消息列表
-                container.innerHTML = this.messages.map(msg => {
-                    const messageClass = msg.type === 'decision' ? 'decision' : 'noise';
-                    const tagClass = msg.type === 'decision' ? 'wechat-tag-decision' : 'wechat-tag-noise';
-                    const tagIcon = msg.type === 'decision' ? '⚡' : '🔇';
-                    
-                    return `
-                        <div class="glass-card wechat-message p-4 ${messageClass}">
-                            <div class="wechat-message-header">
-                                <span class="wechat-message-sender">${msg.sender}</span>
-                                <span class="wechat-message-time">${msg.time}</span>
-                            </div>
-                            <div class="wechat-message-content">${msg.content}</div>
-                            <div class="flex items-center gap-2">
-                                <span class="wechat-message-tag ${tagClass}">
-                                    ${tagIcon} ${msg.tag}
-                                </span>
-                                <span class="wechat-message-tag wechat-tag-type">
-                                    ${msg.category}
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-        };
+                document.getElementById('loading-step').classList.add('hidden');
+                document.getElementById('result-step').classList.remove('hidden');
+            }, 2000);
+        }
 
-        // 初始化渲染知识资产
-        document.addEventListener('DOMContentLoaded', () => {
-            assetActions.renderAssets();
-        });
+        function enterDrama(gender, index) {
+            activeRole = DATABASE[gender][index];
+            document.getElementById('result-step').classList.add('hidden');
+            document.getElementById('drama-step').classList.remove('hidden');
+            document.getElementById('active-role-name').innerText = activeRole.name;
+
+            const scene = activeRole.scenes[0];
+            showScene(scene);
+        }
+
+        function showScene(scene) {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="chat-bubble p-4 text-sm leading-relaxed animate__animated animate__fadeInLeft">${scene.text.replace(/\n/g, '<br>')}</div>`;
+            
+            const choiceBox = document.getElementById('choice-box');
+            choiceBox.innerHTML = '';
+            scene.choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = "choice-btn w-full p-4 rounded-xl text-left text-xs text-slate-200";
+                btn.innerText = c.t;
+                btn.onclick = () => handleChoice(c);
+                choiceBox.appendChild(btn);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleChoice(choice) {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="chat-bubble p-4 text-sm self-end bg-purple-600/30 border border-purple-500/50 ml-12 animate__animated animate__fadeInRight">${choice.t}</div>`;
+            
+            document.getElementById('choice-box').innerHTML = '';
+
+            setTimeout(() => {
+                chatBox.innerHTML += `<div class="chat-bubble p-4 text-sm leading-relaxed border border-white/5 bg-white/5 animate__animated animate__fadeInUp">
+                    <b>结局推演：</b><br>${choice.next}<br><br>
+                    <span class="text-amber-400">这就是你的时空镜像。即便跨越千年，你依然会做出如此纯粹的选择。</span>
+                </div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 800);
+        }
     </script>
-</body>
-</html>
 </body>
 </html>
